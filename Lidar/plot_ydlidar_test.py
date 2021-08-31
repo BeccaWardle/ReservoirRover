@@ -14,10 +14,12 @@ def animate(num):
         ran = []
         intensity = []
         for point in scan.points:
-            angle.append(point.angle);
-            ran.append(point.range);
-            intensity.append(point.intensity);
+            if point.range != 0:
+                angle.append(point.angle);
+                ran.append(point.range);
+                intensity.append(point.intensity);
         lidar_polar.clear()
+        lidar_polar.set_theta_direction(-1)
         lidar_polar.scatter(angle, ran, c=intensity, cmap='hsv', alpha=0.95)
 
 
@@ -28,7 +30,8 @@ RMAX = 32.0
 fig = plt.figure()
 # fig.canvas.set_window_title('YDLidar LIDAR Monitor')
 
-lidar_polar = plt.subplot(polar=True)
+lidar_polar = plt.subplot(projection="polar")
+lidar_polar.set_theta_direction(-1)
 lidar_polar.autoscale_view(True,True,True)
 lidar_polar.set_rmax(RMAX)
 lidar_polar.grid(True)
@@ -51,14 +54,19 @@ scan = ydlidar.LaserScan()
 
 
 ret = laser.initialize();
-if ret:
-    print("Turning on")
-    ret = laser.turnOn();
+try:
     if ret:
-        ani = animation.FuncAnimation(fig, animate, interval=5)
-        plt.show()
-    else:
-        print("Failed to turn on")
-    laser.turnOff();
-laser.disconnecting();
-plt.close();
+        print("Turning on")
+        ret = laser.turnOn();
+        if ret:
+            ani = animation.FuncAnimation(fig, animate, interval=5)
+            plt.show()
+        else:
+            print("Failed to turn on")
+        laser.turnOff();
+
+except KeyboardInterrupt:
+    laser.disconnecting();
+    plt.close();
+laser.disconnecting()
+plt.close()
