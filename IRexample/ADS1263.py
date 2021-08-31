@@ -1,12 +1,12 @@
 # /*****************************************************************************
-# * | File        :       ADS1263.py
+# * | File        :	  ADS1263.py
 # * | Author      :   Waveshare team
 # * | Function    :   ADS1263 driver
 # * | Info        :
 # *----------------
 # * | This version:   V1.0
 # * | Date        :   2020-12-15
-# * | Info        :
+# * | Info        :   
 # ******************************************************************************/
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 # THE SOFTWARE.
 #
 
-import IR.config as config
+import config
 import RPi.GPIO as GPIO
 
 ScanMode = 0
@@ -55,7 +55,7 @@ ADS1263_ADC2_GAIN = {
 }
 # data rate
 ADS1263_DRATE = {
-    'ADS1263_38400SPS'  : 0xF,
+    'ADS1263_38400SPS'  : 0xF, 
     'ADS1263_19200SPS'  : 0xE,
     'ADS1263_14400SPS'  : 0xD,
     'ADS1263_7200SPS'   : 0xC,
@@ -183,20 +183,20 @@ class ADS1263:
         config.delay_ms(200)
         config.digital_write(self.rst_pin, GPIO.HIGH)
         config.delay_ms(200)
-
-
+    
+    
     def ADS1263_WriteCmd(self, reg):
         config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
         config.spi_writebyte([reg])
         config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
-
-
+    
+    
     def ADS1263_WriteReg(self, reg, data):
         config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
         config.spi_writebyte([ADS1263_CMD['CMD_WREG'] | reg, 0x00, data])
         config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
-
-
+        
+        
     def ADS1263_ReadData(self, reg):
         config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
         config.spi_writebyte([ADS1263_CMD['CMD_RREG'] | reg, 0x00])
@@ -204,7 +204,7 @@ class ADS1263:
         config.digital_write(self.cs_pin, GPIO.HIGH)#cs 1
         return data
 
-
+    
     # Check Data
     def ADS1263_CheckSum(self, val, byt):
         sum = 0
@@ -216,8 +216,8 @@ class ADS1263:
         sum += 0x9b
         # print(sum, byt)
         return (sum&0xff) ^ byt     # if sum equal byt, this will be 0
-
-
+    
+    
     # waiting for a busy end, just for ADC1
     def ADS1263_WaitDRDY(self):
         for i in range(0,400000,1):
@@ -225,17 +225,17 @@ class ADS1263:
                 break
         if(i >= 400000):
             print ("Time Out ...\r\n")
-
+        
     # Check chip ID, success is return 1
     def ADS1263_ReadChipID(self):
         id = self.ADS1263_ReadData(ADS1263_REG['REG_ID'])
         return id[0] >> 5
-
-
+    
+    
     def ADS1263_SetMode(self, Mode):
         ScanMode = Mode
-
-
+        
+        
     #The configuration parameters of ADC, gain and data rate
     def ADS1263_ConfigADC(self, gain, drate):
         MODE2 = 0x80
@@ -252,7 +252,7 @@ class ADS1263:
             print("REG_REFMUX success")
         else:
             print("REG_REFMUX unsuccess")
-
+            
         MODE0 = ADS1263_DELAY['ADS1263_DELAY_8d8ms']
         self.ADS1263_WriteReg(ADS1263_REG['REG_MODE0'], MODE0)
         if(self.ADS1263_ReadData(ADS1263_REG['REG_MODE0'])[0] == MODE0):
@@ -270,15 +270,15 @@ class ADS1263:
             print("REG_ADC2CFG success")
         else:
             print("REG_ADC2CFG unsuccess")
-
+            
         MODE0 = ADS1263_DELAY['ADS1263_DELAY_8d8ms']
         self.ADS1263_WriteReg(ADS1263_REG['REG_MODE0'], MODE0)
         if(self.ADS1263_ReadData(ADS1263_REG['REG_MODE0'])[0] == MODE0):
             print("REG_MODE0 success")
         else:
             print("REG_MODE0 unsuccess")
-
-
+            
+    
     # Set ADC1 Measuring channel
     def ADS1263_SetChannal(self, Channal):
         if Channal > 10:
@@ -302,47 +302,47 @@ class ADS1263:
             pass
         else:
             print("REG_ADC2MUX unsuccess")
-
+            
 
     # Set ADC1 Measuring differential channel
     def ADS1263_SetDiffChannal(self, Channal):
         if Channal == 0:
-            INPMUX = (0<<4) | 1         #DiffChannal    AIN0-AIN1
+            INPMUX = (0<<4) | 1 	#DiffChannal	AIN0-AIN1
         elif Channal == 1:
-            INPMUX = (2<<4) | 3         #DiffChannal    AIN2-AIN3
+            INPMUX = (2<<4) | 3 	#DiffChannal	AIN2-AIN3
         elif Channal == 2:
-            INPMUX = (4<<4) | 5         #DiffChannal    AIN4-AIN5
+            INPMUX = (4<<4) | 5 	#DiffChannal	AIN4-AIN5
         elif Channal == 3:
-            INPMUX = (6<<4) | 7         #DiffChannal    AIN6-AIN7
+            INPMUX = (6<<4) | 7 	#DiffChannal	AIN6-AIN7
         elif Channal == 4:
-            INPMUX = (8<<4) | 9         #DiffChannal    AIN8-AIN9
+            INPMUX = (8<<4) | 9 	#DiffChannal	AIN8-AIN9
         self.ADS1263_WriteReg(ADS1263_REG['REG_INPMUX'], INPMUX)
         if(self.ADS1263_ReadData(ADS1263_REG['REG_INPMUX'])[0] == INPMUX):
             # print("REG_INPMUX success")
             pass
         else:
-            print("Diff REG_INPMUX unsuccess")
-
+            print("REG_INPMUX unsuccess")
+            
 
     # Set ADC2 Measuring differential channel
     def ADS1263_SetDiffChannal_ADC2(self, Channal):
         if Channal == 0:
-            INPMUX = (0<<4) | 1         #DiffChannal    AIN0-AIN1
+            INPMUX = (0<<4) | 1 	#DiffChannal	AIN0-AIN1
         elif Channal == 1:
-            INPMUX = (2<<4) | 3         #DiffChannal    AIN2-AIN3
+            INPMUX = (2<<4) | 3 	#DiffChannal	AIN2-AIN3
         elif Channal == 2:
-            INPMUX = (4<<4) | 5         #DiffChannal    AIN4-AIN5
+            INPMUX = (4<<4) | 5 	#DiffChannal	AIN4-AIN5
         elif Channal == 3:
-            INPMUX = (6<<4) | 7         #DiffChannal    AIN6-AIN7
+            INPMUX = (6<<4) | 7 	#DiffChannal	AIN6-AIN7
         elif Channal == 4:
-            INPMUX = (8<<4) | 9         #DiffChannal    AIN8-AIN9
+            INPMUX = (8<<4) | 9 	#DiffChannal	AIN8-AIN9
         self.ADS1263_WriteReg(ADS1263_REG['REG_ADC2MUX'], INPMUX)
         if(self.ADS1263_ReadData(ADS1263_REG['REG_ADC2MUX'])[0] == INPMUX):
             # print("REG_ADC2MUX success")
             pass
         else:
             print("REG_ADC2MUX unsuccess")
-
+            
     # Device initialization
     def ADS1263_init(self):
         if (config.module_init() != 0):
@@ -359,8 +359,8 @@ class ADS1263:
         self.ADS1263_ConfigADC(ADS1263_GAIN['ADS1263_GAIN_1'], ADS1263_DRATE['ADS1263_20SPS'])
         self.ADS1263_ConfigADC2(ADS1263_ADC2_GAIN['ADS1263_ADC2_GAIN_1'], ADS1263_ADC2_DRATE['ADS1263_ADC2_10SPS'])
         return 0
-
-
+        
+        
     # Read ADC data
     def ADS1263_Read_ADC_Data(self):
         config.digital_write(self.cs_pin, GPIO.LOW)#cs  0
@@ -380,8 +380,8 @@ class ADS1263:
         if(self.ADS1263_CheckSum(read, CRC) != 0):
             print("ADC1 data read error!")
         return read
-
-
+ 
+ 
     # Read ADC2 data
     def ADS1263_Read_ADC2_Data(self):
         read = 0
@@ -400,11 +400,11 @@ class ADS1263:
         if(self.ADS1263_CheckSum(read, CRC) != 0):
             print("ADC2 data read error!")
         return read
-
-
+        
+        
     # Read ADC1 specified channel data
     def ADS1263_GetChannalValue(self, Channel):
-        if(ScanMode == 0):# 0  Single-ended input  8 channel1 Differential input  4 channe
+        if(ScanMode == 0):# 0  Single-ended input  8 channel1 Differential input  4 channe 
             if(Channel>10):
                 return 0
             self.ADS1263_SetChannal(Channel)
@@ -417,9 +417,9 @@ class ADS1263:
             if(Channel>4):
                 return 0
             self.ADS1263_SetDiffChannal(Channel)
-            config.delay_ms(2)
+            config.delay_ms(2) 
             self.ADS1263_WriteCmd(ADS1263_CMD['CMD_START1'])
-            config.delay_ms(2)
+            config.delay_ms(2) 
             self.ADS1263_WaitDRDY()
             Value = self.ADS1263_Read_ADC_Data()
         return Value
@@ -427,7 +427,7 @@ class ADS1263:
 
     # Read ADC2 specified channel data
     def ADS1263_GetChannalValue_ADC2(self, Channel):
-        if(ScanMode == 0):# 0  Single-ended input  8 channel1 Differential input  4 channe
+        if(ScanMode == 0):# 0  Single-ended input  8 channel1 Differential input  4 channe 
             if(Channel>10):
                 return 0
             self.ADS1263_SetChannal_ADC2(Channel)
@@ -439,80 +439,80 @@ class ADS1263:
             if(Channel>4):
                 return 0
             self.ADS1263_SetDiffChannal_ADC2(Channel)
-            config.delay_ms(2)
+            config.delay_ms(2) 
             self.ADS1263_WriteCmd(ADS1263_CMD['CMD_START2'])
-            config.delay_ms(2)
+            config.delay_ms(2) 
             Value = self.ADS1263_Read_AD2C_Data()
         return Value
-
+        
 
     def ADS1263_GetAll(self):
         ADC_Value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         for i in range(0, 10, 1):
             ADC_Value[i] = self.ADS1263_GetChannalValue(i)
             self.ADS1263_WriteCmd(ADS1263_CMD['CMD_STOP1'])
-            config.delay_ms(20)
+            config.delay_ms(20) 
         print("--- Read ADC1 value success ---")
         return ADC_Value
-
-
+          
+          
     def ADS1263_GetAll_ADC2(self):
         ADC_Value = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         for i in range(0, 10, 1):
             ADC_Value[i] = self.ADS1263_GetChannalValue_ADC2(i)
             self.ADS1263_WriteCmd(ADS1263_CMD['CMD_STOP2'])
-            config.delay_ms(20)
+            config.delay_ms(20) 
         print("--- Read ADC2 value success ---")
         return ADC_Value
-
-
+        
+        
     def ADS1263_RTD_Test(self):
         Delay = ADS1263_DELAY['ADS1263_DELAY_8d8ms']
         Gain = ADS1263_GAIN['ADS1263_GAIN_1']
         Drate = ADS1263_DRATE['ADS1263_20SPS']
-
+        
         #MODE0 (CHOP OFF)
-        MODE0 = Delay
-        self.ADS1263_WriteReg(ADS1263_REG['REG_MODE0'], MODE0)
-        config.delay_ms(1)
+        MODE0 = Delay 
+        self.ADS1263_WriteReg(ADS1263_REG['REG_MODE0'], MODE0) 
+        config.delay_ms(1) 
 
         #(IDACMUX) IDAC2 AINCOM,IDAC1 AIN3
-        IDACMUX = (0x0a<<4) | 0x03
-        self.ADS1263_WriteReg(ADS1263_REG['REG_IDACMUX'], IDACMUX)
-        config.delay_ms(1)
+        IDACMUX = (0x0a<<4) | 0x03 
+        self.ADS1263_WriteReg(ADS1263_REG['REG_IDACMUX'], IDACMUX) 
+        config.delay_ms(1) 
 
         #((IDACMAG)) IDAC2 = IDAC1 = 250uA
-        IDACMAG = (0x03<<4) | 0x03
-        self.ADS1263_WriteReg(ADS1263_REG['REG_IDACMAG'], IDACMAG)
-        config.delay_ms(1)
+        IDACMAG = (0x03<<4) | 0x03 
+        self.ADS1263_WriteReg(ADS1263_REG['REG_IDACMAG'], IDACMAG) 
+        config.delay_ms(1) 
 
-        MODE2 = (Gain << 4) | Drate
-        self.ADS1263_WriteReg(ADS1263_REG['REG_MODE2'], MODE2)
-        config.delay_ms(1)
+        MODE2 = (Gain << 4) | Drate 
+        self.ADS1263_WriteReg(ADS1263_REG['REG_MODE2'], MODE2) 
+        config.delay_ms(1) 
 
         #INPMUX (AINP = AIN7, AINN = AIN6)
-        INPMUX = (0x07<<4) | 0x06
-        self.ADS1263_WriteReg(ADS1263_REG['REG_INPMUX'], INPMUX)
-        config.delay_ms(1)
+        INPMUX = (0x07<<4) | 0x06 
+        self.ADS1263_WriteReg(ADS1263_REG['REG_INPMUX'], INPMUX) 
+        config.delay_ms(1) 
 
         # REFMUX AIN4 AIN5
-        REFMUX = (0x03<<3) | 0x03
-        self.ADS1263_WriteReg(ADS1263_REG['REG_REFMUX'], REFMUX)
-        config.delay_ms(1)
+        REFMUX = (0x03<<3) | 0x03 
+        self.ADS1263_WriteReg(ADS1263_REG['REG_REFMUX'], REFMUX) 
+        config.delay_ms(1) 
 
         #Read one conversion
-        self.ADS1263_WriteCmd(ADS1263_CMD['CMD_START1'])
-        config.delay_ms(10)
-        self.ADS1263_WaitDRDY()
-        Value = self.ADS1263_Read_ADC_Data()
-        self.ADS1263_WriteCmd(ADS1263_CMD['CMD_STOP1'])
-
+        self.ADS1263_WriteCmd(ADS1263_CMD['CMD_START1']) 
+        config.delay_ms(10) 
+        self.ADS1263_WaitDRDY() 
+        Value = self.ADS1263_Read_ADC_Data() 
+        self.ADS1263_WriteCmd(ADS1263_CMD['CMD_STOP1']) 
+    
         return Value
-
-
+        
+    
     def ADS1263_DAC_Test(self, isPositive, isOpen):
         Volt = ADS1263_DAC_VOLT['ADS1263_DAC_VLOT_3']
-
+        
         if(isPositive):
             Reg = ADS1263_REG['REG_TDACP']  # IN6
         else:
@@ -523,11 +523,11 @@ class ADS1263:
         else:
             Value = 0x00
 
-        self.ADS1263_WriteReg(Reg, Value)
-
-
+        self.ADS1263_WriteReg(Reg, Value) 
+        
+        
     def ADS1263_Exit(self):
         config.module_exit()
-
+        
 ### END OF FILE ###
 

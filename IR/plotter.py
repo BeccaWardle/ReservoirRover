@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 
 import ADS1263
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
@@ -20,12 +20,13 @@ def animate(waste):
     volts = []
     rads = []
     sensors_n = 6
+    rads = [2.3562, 3.1416, 3.9270, 4.7124, 5.4978, 0.0, 0.7854]
+    # rads = [3.9270, 3.1416, 2.3562, 1.5707, 0.7854, 0.0, 5.4978]
     for i in range(sensors_n + 1):
-        # if(ADC_Value[i]>>31 == 1):
-            # print("ADC1 IN%d = -%lf" %(i, (REF*2 - ADC_Value[i] * REF / 0x80000000)))
+        print(f"ADC1 IN{i} = {(REF*2 - ADC_Values[i] * REF / 0x7fffffff)} : {rads[i]}")
         volts.append(round(ADC_Values[i], 5))
-        rads.append(round(3.14159265359/sensors_n * i, 5))
-        print(f"ADC1 {i} = {(ADC_Values[i] * REF / 0x7fffffff)} : {rads[i]}")   # 32bit
+        # * REF / 0x7fffffff)
+        # print(f"ADC1 {i} = {(ADC_Values[i])} : {rads[i]}")   # 32bit 0x80000000
     polar.clear()
     polar.scatter(rads, volts)
 
@@ -39,7 +40,7 @@ try:
         print("Init error")
         exit()
     while(True):
-        anim = animation.FuncAnimation(fig, animate, interval=4)
+        anim = animation.FuncAnimation(fig, animate, interval=1)
         plt.show()
     # animate()
 
