@@ -27,7 +27,7 @@
 # THE SOFTWARE.
 #
 
-import config
+import IR.config as config
 import RPi.GPIO as GPIO
 
 ScanMode = 0
@@ -321,7 +321,7 @@ class ADS1263:
             # print("REG_INPMUX success")
             pass
         else:
-            print("REG_INPMUX unsuccess")
+            print("Diff REG_INPMUX unsuccess")
 
 
     # Set ADC2 Measuring differential channel

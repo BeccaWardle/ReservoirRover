@@ -3,10 +3,11 @@
 
 
 import time
-import ADS1263
+import IR.ADS1263 as ADS1263
 import RPi.GPIO as GPIO
 
-REF = 5.08          # Modify according to actual voltage
+REF = 5.1   # Modify according to actual voltage
+print(f"REF= {REF}")
 # external AVDD and AVSS(Default), or internal 2.5V
 TEST_ADC = True        # ADC Test part
 TEST_RTD = False        # RTD Test part
@@ -23,10 +24,13 @@ try:
         if(TEST_ADC):       # ADC Test
             ADC_Value = ADC.ADS1263_GetAll()    # get ADC1 value
             for i in range(10):
-                if(ADC_Value[i]>>31 ==1):
-                    print("ADC1 IN%d = -%lf" %(i, (REF*2 - ADC_Value[i] * REF / 0x80000000)))
+                if(ADC_Value[i] >> 31 == 1):
+                    print(f"ADC1 IN{i}: oops negeative{hex(ADC_Value[i])} => {(ADC_Value[i] * REF / 0x80000000)}")
                 else:
-                    print("ADC1 IN%d = %lf" %(i, (ADC_Value[i] * REF / 0x7fffffff)))   # 32bit
+                    # print(f"ADC1 IN{i}: {hex(ADC_Value[i])} => {REF*2 - ADC_Value[i] * REF / 0x7fffffff}")
+                    print(f"ADC1 IN{i}: {hex(ADC_Value[i])} => {ADC_Value[i] * REF / 0x7fffffff}")
+
+                    # print("ADC1 IN%d = %lf" %(i, (ADC_Value[i] * REF / 0x7fffffff)))   # 32bit
 
             # ADC_Value = ADC.ADS1263_GetAll_ADC2()   # get ADC2 value
             # for i in range(0, 10):
