@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 import os
-import ydlidar
-from IR import ADS1263
 import sys
 from datetime import datetime as dt
 from math import pi
-import matplotlib.pyplot as plt
+
 import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import ydlidar
+
+from IR import ADS1263
+
 
 def animator(num):
     # Lidar data
