@@ -141,7 +141,7 @@ The software for this project was written in Python 3
 
 The code use <https://github.com/YDLIDAR/YDLidar-SDK> to handle the Lidar and for the HAT some [code](http://www.waveshare.com/w/upload/6/64/High-Pricision_AD_HAT_Code.7z) found on the [waveshare page](https://www.waveshare.com/wiki/High-Precision_AD_HAT) for the HAT (under quick start
 
-Motor control software has been left seperate and minimal
+Motor control [software](../motor_pwm.py) has been left seperate and minimal
 
 ### Lidar
 
@@ -150,8 +150,6 @@ Controlling the lidar via the Python [API](https://github.com/YDLIDAR/YDLidar-SD
 It requres `import ydlidar` and then setting the Lidars settings. I found the ones used in this project in the example documentation for the lidar
 
 ### IR and Hat
-
-
 
 ### Plotting Code
 
