@@ -1,62 +1,53 @@
 #!/usr/bin/env python3
-import os
-import sys
-from datetime import datetime as dt
-from math import pi
 
-import matplotlib.animation as animation
+"""
+Creates a matplotlib annimation plotting the lidar and IR sensors onto a polar graph
+"""
+
+from math import pi
+from sys import exit as sys_exit
+
 import matplotlib.pyplot as plt
 import ydlidar
+from matplotlib import animation
 
 from IR import ADS1263
 
 
 def animator(num):
+    """
+    Annimator funtion for maplotlib.annimation
+    Collects the Lidar and IR data and adds them as plots to a polar graph
+    """
     # Lidar data
     l_angle = []
     l_range = []
-    ret = laser.turnOn();
-    if ret:
-        r = laser.doProcessSimple(scan);
-        if r:
-            for point in scan.points:
-                # if int(point.range) == 0:
-                    # continue
-                # if point.range < 4:
+    laser_on = LASER.turnOn()
+    if laser_on:
+        laser_scan = LASER.doProcessSimple(LASER_SCAN)
+        if laser_scan:
+            for point in LASER_SCAN.points:
                 l_angle.append(point.angle)
                 l_range.append(point.range)
-                # else:
-                    # l_angle.append(point.angle)
-                    # l_range.append(4)
 
     # IR Data
-    ADC_vales = ADC.ADS1263_GetAll()
-    IR_volts = []
-    IR_rads = [0.0 ,pi / 2, pi, (3 * pi) / 2]
-    for i in range(sensors):
-        # file.write(round(ADC_vales[i], 5))
-        tmp_volt = ADC_vales[i] * IR_voltage / 0x7fffffff
-        print(f"sensor[{i}]: {hex(ADC_vales[i]):>5} {tmp_volt:>5} {29.988 * pow(tmp_volt, -1.173)}")
-        # if tmp_volt < 0.25:
+    ir_distances = []
+    ir_rads = [0.0 ,pi / 2, pi, (3 * pi) / 2]
 
-            # tmp_volt = 0
-            # tmp_dist = 0
-        # else:
-        tmp_dist = 29.988 * pow(tmp_volt, -1.173) / 100
-        if tmp_dist > 0.7:
-            tmp_dist = 0
+    adc_vales = ADC.ADS1263_GetAll()
 
-        IR_volts.append(tmp_dist)
+    for i in range(SENSORS):
+        voltage = adc_vales[i] * IR_REF_VOLTAGE / 0x7fffffff
 
-    # print(IR_volts)
-    # print(IR_rads)
+        ir_dist = 29.988 * pow(voltage, -1.173) / 100
+        ir_distances.append(ir_dist)
 
     lidar_polar.clear()
     lidar_polar.set_theta_direction(-1)
     lidar_polar.fill_between(l_angle, l_range, color="green", alpha=0.5)
     lidar_polar.scatter(l_angle, l_range, color="yellow", alpha=0.5)
-    lidar_polar.scatter(IR_rads, IR_volts, c="red", alpha=0.95)
-    print(f"\033[{sensors + 2}A")
+    lidar_polar.scatter(ir_rads, ir_distances, c="red", alpha=0.95)
+    print(f"\033[{SENSORS + 2}A")
 
 
 # Configure plot
@@ -66,54 +57,56 @@ lidar_polar = plt.subplot(polar=True)
 lidar_polar.autoscale_view(True,True,True)
 lidar_polar.set_rmax(32)
 lidar_polar.grid(True)
+
 # number of IR sensors on device
-sensors = 4
+SENSORS = 4
 # voltage the IR sensors receive
-IR_voltage = 5.08
+IR_REF_VOLTAGE = 5.08
 
 
-## Sort out LIDAR access
+## Configure LIDAR access
 RMAX = 32.0
 
-ports = ydlidar.lidarPortList();
-port = "/dev/ydlidar";
+PORTS = ydlidar.lidarPortList()
+PORT = "/dev/ydlidar"
 
-for key, value in ports.items():
+for key, value in PORTS.items():
     print(value)
-    port = value;
+    PORT = value
 
-laser = ydlidar.CYdLidar();
-laser.setlidaropt(ydlidar.LidarPropSerialPort, port);
-laser.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)
-laser.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE);
-laser.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL);
-laser.setlidaropt(ydlidar.LidarPropScanFrequency, 10.0);
-laser.setlidaropt(ydlidar.LidarPropSampleRate, 9);
-laser.setlidaropt(ydlidar.LidarPropSingleChannel, False);
+LASER = ydlidar.CYdLidar()
+LASER.setlidaropt(ydlidar.LidarPropSerialPort, PORT)
+LASER.setlidaropt(ydlidar.LidarPropSerialBaudrate, 128000)
+LASER.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
+LASER.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
+LASER.setlidaropt(ydlidar.LidarPropScanFrequency, 10.0)
+LASER.setlidaropt(ydlidar.LidarPropSampleRate, 9)
+LASER.setlidaropt(ydlidar.LidarPropSingleChannel, False)
 
-scan = ydlidar.LaserScan()
+LASER_SCAN = ydlidar.LaserScan()
 
-ret = laser.initialize();
+LASER_INIT = LASER_SCAN.initialize()
 
 
 try:
     # IR recording
     ADC = ADS1263.ADS1263()
-    if (ADC.ADS1263_init() == -1):
+    if ADC.ADS1263_init() == -1:
         print("IR Init error")
-        exit()
+        sys_exit()
     anim = animation.FuncAnimation(fig, animator, interval= 1)
     plt.show()
 
 except KeyboardInterrupt:
     print("Quiting")
+    # Turn off IO
     ADC.ADS1263_Exit()
-    laser.turnOff();
-    laser.disconnecting();
-    plt.close();
-    exit()
+    LASER.turnOff()
+    LASER.disconnecting()
+    plt.close()
+    sys_exit()
 
 ADC.ADS1263_Exit()
-laser.turnOff();
-laser.disconnecting();
-plt.close();
+LASER.turnOff()
+LASER.disconnecting()
+plt.close()
