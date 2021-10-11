@@ -145,12 +145,57 @@ Motor control [software](../motor_pwm.py) has been left seperate and minimal
 
 ### Lidar
 
-Controlling the lidar via the Python [API](https://github.com/YDLIDAR/YDLidar-SDK/blob/master/doc/howto/how_to_build_and_install.md#python-api-install-separtately) is easy.
+Control of the lidar is done via a Python [API](https://github.com/YDLIDAR/YDLidar-SDK/blob/master/doc/howto/how_to_build_and_install.md#python-api-install-separtately)
 
-It requres `import ydlidar` and then setting the Lidars settings. I found the ones used in this project in the example documentation for the lidar
+It requres `import ydlidar` and then setting the Lidars settings. I found the ones used in this project in the example documentation for the lidar driver
+
+![Lidar Settings](./lidar_config.png)
+
+The Lidar is turned on
+
+``` python
+     # Lidar data
+      laser_on = LASER.turnOn()
+      if laser_on:
+          laser_scan = LASER.doProcessSimple(LASER_SCAN)
+          
+```
+
+And if successfully turned on, the data (range and corresponding angle) is written into a list
+
+``` python
+if laser_scan:
+  l_angle = []
+  l_range = []
+  for point in LASER_SCAN.points:
+      l_angle.append(point.angle)
+      l_range.append(point.range)
+```
 
 ### IR and Hat
 
-### Plotting Code
+The output voltage from the IR senors area read into the High Precision AD HAT on the Pi. These values are read as 32 bit signed integers using the [example code](../IR/config.py) which is imported as `ADS1263`
+
+A reference voltage `IR_REF_VOLTAGE` must be set to the voltage of the power rail. 5.08 Volts this setup
+
+After that the readings can be read from the HAT and converted back into voltages and then converted into distances using the code below 
+
+``` python
+# IR Data
+ir_distances = []
+ir_rads = [0.0 ,pi / 2, pi, (3 * pi) / 2]
+
+adc_vales = ADC.ADS1263_GetAll()
+
+for i in range(SENSORS):
+    voltage = adc_vales[i] * IR_REF_VOLTAGE / 0x7fffffff
+
+    ir_dist = 29.988 * pow(voltage, -1.173) / 100
+    ir_distances.append(ir_dist)
+```
 
 ### Recording Code
+
+`data_gather.py` is a bare bones data recording file. When run it saves the raw data from the sensors into a file `data/[user name]/[current data and time]` where [user name] is the first argument passed to the program
+
+The angles of the IR sensors are not save automatically and all the voltages are saved as the 32 bit integers read from the HAT with the reference voltage saved above them
